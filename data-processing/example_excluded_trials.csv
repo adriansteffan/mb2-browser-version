@@ -1,0 +1,3 @@
+id,FAM1,FAM1_OK,FAM2,FAM2_OK,FAM3,FAM3_OK,FAM4,FAM4_OK,TEST1,TEST1_OK,TEST2,TEST2_OK,comment
+Participant12,FAM_LR,yes,FAM_LL,yes,FAM_RL,yes,FAM_RR,yes,IG_LL,yes,KNOW_LR,no,
+Participant21,FAM_RL,no,FAM_RR,no,FAM_LR,no,FAM_LL,yes,IG_RR,yes,KNOW_RL,no,"reflection in glasses"
