@@ -144,17 +144,21 @@
       }
     }
 
+    function _drawValidationPoint_Internal(left,top){
+      if(trial.use_gif){
+        var pt_html = `<img src="`+trial.gif_source+`" id="calibration-point" style="width:${trial.point_size*5}px; position: absolute; transform: translate(-50%, -50%); left:${left}; top:${top};"/>`;
+      }else{
+        var pt_html = `<div class="validation-point" style="width:${trial.point_size}px; height:${trial.point_size}px; border-radius:${trial.point_size}px; border: 1px solid #000; background-color: #333; position: absolute; left:${left}; top:${top};"></div>`
+      }
+      return pt_html; 
+    }
+
     function drawValidationPoint_PercentMode(x,y){
-      return `<div class="validation-point" style="width:${trial.point_size}px; height:${trial.point_size}px; border-radius:${trial.point_size}px; border: 1px solid #000; background-color: #333; position: absolute; left:${x}%; top:${y}%;"></div>`
+      return _drawValidationPoint_Internal(`${x}%`,`${y}%`);
     }
 
     function drawValidationPoint_CenterOffsetMode(x,y){
-      if(trial.use_gif){
-        var pt_html = `<img src="`+trial.gif_source+`" class="validation-point" id="calibration-point" style="width:${trial.point_size*5}px; position: absolute; transform: translate(-50%, -50%); left:calc(50% - ${trial.point_size/2}px + ${x}px); top:calc(50% - ${trial.point_size/2}px + ${y}px);"/>`;
-      }else{
-        var pt_html = `<div class="validation-point" style="width:${trial.point_size}px; height:${trial.point_size}px; border-radius:${trial.point_size}px; border: 1px solid #000; background-color: #333; position: absolute; left:calc(50% - ${trial.point_size/2}px + ${x}px); top:calc(50% - ${trial.point_size/2}px + ${y}px);"></div>`
-      }
-      return pt_html; 
+      return _drawValidationPoint_Internal(`calc(50% - ${trial.point_size/2}px + ${x}px)`,`calc(50% - ${trial.point_size/2}px + ${y}px)`);
     }
 
     function drawCircle(target_x, target_y, dx, dy, r){

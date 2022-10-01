@@ -65,6 +65,7 @@
             KNOW_LR: 'media/video/KNOW_LR.mp4',
             KNOW_RL: 'media/video/KNOW_RL.mp4',
             KNOW_RR: 'media/video/KNOW_RR.mp4',
+            ATTENTION_3SEC: 'media/video/Attentiongetter_3sec.mp4',
         }
 
         var familiarizationOrders = {
@@ -285,7 +286,41 @@
                 ],
             }
         }
-                
+
+        var validation_full = { 
+            type: 'webgazer-validate',
+            validation_points: [[50,50], [50,12], [12,12], [12,50], [12,88], [50,88], [88,88], [88,50], [88,12]],
+            roi_radius: 200,
+            validation_duration: 2050,
+            use_gif: true,
+            extensions: [
+                {
+                    type: 'webcam-recorder', 
+                    params: {
+                        videoName: "validation_full"
+                    }
+                },
+                {
+                    type: 'background-audio', 
+                    params: {}
+                }
+            ],
+        }
+        
+        var attention_getter = {
+            type: "video-keyboard-response",
+            stimulus: [videos.ATTENTION_3SEC],
+            autoplay: true,
+            controls: false,
+            height: () => window.innerHeight,
+            trial_ends_after_video: true,
+            choices: jsPsych.NO_KEYS,
+            data: {
+                task: 'attention_getter',
+                windowHeight: () => window.innerHeight,
+                windowWidth: () => window.innerWidth,
+            },
+        }
 
         var video = {
             type: "video-keyboard-response",
@@ -568,13 +603,14 @@
             startFullscreen,
             initCameraTrial, 
             calibrationTrial,
-            createValidationTrial(1),
+            attention_getter,
             fam_videos,
-            createValidationTrial(2),
+            attention_getter,
             test_videos1,
-            createValidationTrial(3),
+            attention_getter,
             test_videos2,
-            createValidationTrial(4),
+            createValidationTrial(1),
+            validation_full,
             stopFullscreen,
             startUpload,
             uploadTrial,

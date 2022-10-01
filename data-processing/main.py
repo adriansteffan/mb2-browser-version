@@ -48,13 +48,13 @@ time_of_interest_dict = {
     "FAM_RL": 25918,
     "FAM_RR": 25896,
     "KNOW_LL": 31205,
-    "KNOW_LR": 31244,
-    "KNOW_RL": 31265,
-    "KNOW_RR": 31209,
-    "IG_LL": 29776,
-    "IG_LR": 29797,
-    "IG_RL": 29791,
-    "IG_RR": 29830,
+    "KNOW_LR": 31205,
+    "KNOW_RL": 31205,
+    "KNOW_RR": 31205,
+    "IG_LL": 31205,
+    "IG_LR": 31205,
+    "IG_RL": 31205,
+    "IG_RR": 31205,
 }
 
 list_of_stimuli_endings = [stimulus + ".webm" for stimulus in target_aoi_location.keys()]
