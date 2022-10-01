@@ -105,7 +105,7 @@
       var pt_html = drawValidationPoint(pt[0], pt[1]);
       wg_container.innerHTML = pt_html;
 
-      var pt_dom = wg_container.querySelector('.validation-point');
+      var pt_dom = wg_container.querySelector('#validation-point');
 
       var br = pt_dom.getBoundingClientRect();
       var x = br.left + br.width / 2;
@@ -146,9 +146,9 @@
 
     function _drawValidationPoint_Internal(left,top){
       if(trial.use_gif){
-        var pt_html = `<img src="`+trial.gif_source+`" id="calibration-point" style="width:${trial.point_size*5}px; position: absolute; transform: translate(-50%, -50%); left:${left}; top:${top};"/>`;
+        var pt_html = `<img src="`+trial.gif_source+`" id="validation-point" style="width:${trial.point_size*5}px; position: absolute; transform: translate(-50%, -50%); left:${left}; top:${top};"/>`;
       }else{
-        var pt_html = `<div class="validation-point" style="width:${trial.point_size}px; height:${trial.point_size}px; border-radius:${trial.point_size}px; border: 1px solid #000; background-color: #333; position: absolute; left:${left}; top:${top};"></div>`
+        var pt_html = `<div id="validation-point" class="validation-point" style="width:${trial.point_size}px; height:${trial.point_size}px; border-radius:${trial.point_size}px; border: 1px solid #000; background-color: #333; position: absolute; left:${left}; top:${top};"></div>`
       }
       return pt_html; 
     }
