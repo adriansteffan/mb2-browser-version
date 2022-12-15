@@ -5,19 +5,22 @@ import shutil
 import os
 import sys
 from os import listdir
+from pathlib import Path
 from os.path import isfile, join
 import subprocess
 import pandas as pd
 import statistics
 from io import StringIO
+import zipfile
 
 
 # information is not present in the data output, fix this at some point in time
-STIMULUS_ASPECT_RATIO = 4.0/3.0
+STIMULUS_WIDTH = 1280.0
+STIMULUS_HEIGHT = 960.0
+
+STIMULUS_ASPECT_RATIO = STIMULUS_WIDTH/STIMULUS_HEIGHT
 
 # sampling rate parameters in Hz
-## cutoff point for excluding trials due to a too low sampling rate
-MIN_SAMPLING_RATE = 10
 ## sampling rate that all sata gets resampled to - for visualization purposes only
 RESAMPLE_SAMPLING_RATE = 15
 
@@ -40,21 +43,6 @@ target_aoi_location = {
     "IG_LR": "left",
     "IG_RL": "right",
     "IG_RR": "left"
-}
-
-time_of_interest_dict = {
-    "FAM_LL": 25913,
-    "FAM_LR": 25902,
-    "FAM_RL": 25918,
-    "FAM_RR": 25896,
-    "KNOW_LL": 31205,
-    "KNOW_LR": 31205,
-    "KNOW_RL": 31205,
-    "KNOW_RR": 31205,
-    "IG_LL": 31205,
-    "IG_LR": 31205,
-    "IG_RL": 31205,
-    "IG_RR": 31205,
 }
 
 list_of_stimuli_endings = [stimulus + ".webm" for stimulus in target_aoi_location.keys()]
@@ -307,8 +295,9 @@ for p in participants:
 
     df_dict = dict()
     df_dict['subid'] = p
-    df_dict['age_in_days'] = 0
-    df_dict['error_subj'] = False
+
+    df_dict['stim_width'] = STIMULUS_WIDTH
+    df_dict['stim_height'] = STIMULUS_HEIGHT
 
     df_dict_resampled = dict()
     df_dict_resampled['subid'] = p
@@ -333,19 +322,7 @@ for p in participants:
         sampling_diffs = [datapoints[i + 1]['t'] - datapoints[i]['t'] for i in range(1, len(datapoints) - 1)]
         sampling_rates = [1000 / diff for diff in sampling_diffs]
         df_dict['sampling_rate'] = statistics.mean(sampling_rates)
-        if df_dict['sampling_rate'] < MIN_SAMPLING_RATE:
-            samplingrate_exlusion_trials.append(name_without_trialorder + "_" + df_dict['stimulus'])
-            continue
-
         df_dict['condition'] = "fam" if "FAM" in df_dict['stimulus'] else ("knowledge" if "KNOW" in df_dict['stimulus'] else "ignorance")
-
-        if target_aoi_location[df_dict['stimulus']] == "right":
-            target_aoi = "blue_rectangle_bottom_right"
-            distractor_aoi = "blue_rectangle_bottom_left"
-
-        else:
-            target_aoi = "blue_rectangle_bottom_left"
-            distractor_aoi = "blue_rectangle_bottom_right"
 
         # Resampled data - only important for visualizations
         last_time_point = datapoints[-1]["t"]
@@ -363,8 +340,8 @@ for p in participants:
             df_dict_resampled['x'] = datapoints[last_index]['x']
             df_dict_resampled['y'] = datapoints[last_index]['y']
             df_dict_resampled['t'] = int(t)
-            df_dict_resampled['windowWidth'] = trial['windowWidth']
-            df_dict_resampled['windowHeight'] = trial['windowHeight']
+            df_dict_resampled['win_width'] = trial['windowWidth']
+            df_dict_resampled['win_height'] = trial['windowHeight']
             df_dict_resampled_list.append(dict(df_dict_resampled))
 
             t += timestep
@@ -372,19 +349,26 @@ for p in participants:
         # Non-resampled data - important for analysis of the critical time period
         for datapoint in datapoints:
 
-            if time_of_interest_dict[df_dict['stimulus']] > datapoint["t"] or \
-                    datapoint["t"] > time_of_interest_dict[df_dict['stimulus']] + interval_len_of_interest:
-                continue
-            df_dict['t ( 0 - 8000)'] = datapoint["t"] - time_of_interest_dict[df_dict['stimulus']]
-            if "hitAois" not in datapoint:
-                df_dict['aoi'] = "none"
-            else:
-                df_dict['aoi'] = "target" if target_aoi in datapoint["hitAois"] \
-                    else ("distractor" if distractor_aoi in datapoint["hitAois"] else "none")
+            df_dict['t'] = datapoint["t"]
+            df_dict['x'] = datapoint["x"]
+            df_dict['y'] = datapoint["y"]
+            df_dict['win_width'] = trial['windowWidth']
+            df_dict['win_height'] = trial['windowHeight']
+
+            x_stim, y_stim, outside = translate_coordinates(STIMULUS_ASPECT_RATIO,
+                                                  trial['windowHeight'],
+                                                  trial['windowWidth'],
+                                                  STIMULUS_HEIGHT,
+                                                  STIMULUS_WIDTH,
+                                                  datapoint["x"],
+                                                  datapoint["y"]
+                                                  )
+
+            df_dict['x_stim'] = x_stim
+            df_dict['y_stim'] = y_stim
+
             df_dict_list.append(dict(df_dict))
 
-    mean_sum = 0
-    sd_sum = 0
     for v in videos:
         # only get the data of the correct stimulus
         filtered = [x for x in data if x['stimulus'][0].split("/")[-1].split(".")[0] == v]
@@ -397,40 +381,17 @@ for p in participants:
             tag_video(video_path, filtered[0], v, p)
 
 
-print(samplingrate_exlusion_trials)
-
-
 df = pd.DataFrame(df_dict_list)
 df_resampled = pd.DataFrame(df_dict_resampled_list)
-
-agg_df = df[df['t ( 0 - 8000)'] <= 4000].groupby(['subid', 'condition', 'aoi']).size()
-relative_df = agg_df.groupby(['subid', 'condition']).apply(lambda x: x / float(x.sum())).reset_index(name='freq')
-
-# Ugly fix for missing aois when there wasn't a single gaze in that area -> append 0% values
-aois = ['distractor', 'target', 'none']
-conditions = ['fam', 'knowledge', 'ignorance']
-participants = relative_df['subid'].unique()
-
-df_fix_dict = dict()
-df_fix_dict_list = []
-
-for p in participants:
-    df_fix_dict['subid'] = p
-    for c in conditions:
-        df_fix_dict['condition'] = c
-        for a in aois:
-            df_fix_dict['aoi'] = a
-            if not relative_df[(relative_df.subid == p) & (relative_df.condition == c)].empty and \
-                    relative_df[(relative_df.subid == p) & (relative_df.condition == c) & (relative_df.aoi == a)].empty:
-                df_fix_dict['freq'] = 0.0
-                df_fix_dict_list.append(dict(df_fix_dict))
-
-fix_df = pd.DataFrame(df_fix_dict_list)
 
 if len(sys.argv) == 1 or sys.argv[1] == "p":
     df.to_csv(output_directory + "/transformed_data.csv", encoding='utf-8')
     df_resampled.to_csv(output_directory+"/transformed_data_resampled.csv", encoding='utf-8')
-    relative_df.append(fix_df).to_csv(output_directory+"/relative_data.csv", encoding='utf-8')
+
+    with zipfile.ZipFile(output_directory + '/raw.zip', 'w') as zipObj:
+        for file in Path(data_directory).glob('*.json'):
+            print(file)
+            zipObj.write(os.path.join(os.getcwd(), str(file)),arcname=os.path.split(str(file))[-1])
 
 
 def create_beeswarm(media_name, resampled_df, name_filter, show_sd_circle):
