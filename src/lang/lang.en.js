@@ -1,5 +1,5 @@
 var lang = {
-    welcome : `<p>Welcome to our study. Your webcam will start to record beginning on the next slide.</p>
+    welcome : `<p>Welcome to our study. Your webcam will start recording from the next slide onwards.</p>
     <p>When you are ready to start, press the "Continue" button below.</p>`,
     welcomeButton: "Continue",
 
