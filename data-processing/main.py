@@ -323,6 +323,7 @@ for p in participants:
         sampling_rates = [1000 / diff for diff in sampling_diffs]
         df_dict['sampling_rate'] = statistics.mean(sampling_rates)
         df_dict['condition'] = "fam" if "FAM" in df_dict['stimulus'] else ("knowledge" if "KNOW" in df_dict['stimulus'] else "ignorance")
+        df_dict['stimulus_version'] = trial['stimulus_version'] if "stimulus_version" in trial else 0  # Check if the trial happened after the video fix
 
         # Resampled data - only important for visualizations
         last_time_point = datapoints[-1]["t"]

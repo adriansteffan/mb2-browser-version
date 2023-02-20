@@ -53,19 +53,19 @@
         }
         
         var videos = {  
-            FAM_LL: 'media/video/FAM_LL.mp4',
-            FAM_LR: 'media/video/FAM_LR.mp4',
-            FAM_RL: 'media/video/FAM_RL.mp4',
-            FAM_RR: 'media/video/FAM_RR.mp4',
-            IG_LL: 'media/video/IG_LL.mp4',
-            IG_LR: 'media/video/IG_LR.mp4',
-            IG_RL: 'media/video/IG_RL.mp4',
-            IG_RR: 'media/video/IG_RR.mp4',
-            KNOW_LL: 'media/video/KNOW_LL.mp4',
-            KNOW_LR: 'media/video/KNOW_LR.mp4',
-            KNOW_RL: 'media/video/KNOW_RL.mp4',
-            KNOW_RR: 'media/video/KNOW_RR.mp4',
-            ATTENTION_3SEC: 'media/video/Attentiongetter_3sec.mp4',
+            FAM_LL: {name: 'media/video/FAM_LL.mp4', version: 0},
+            FAM_LR: {name: 'media/video/FAM_LR.mp4', version: 0},
+            FAM_RL: {name: 'media/video/FAM_RL.mp4', version: 0},
+            FAM_RR: {name: 'media/video/FAM_RR.mp4', version: 0},
+            IG_LL: {name: 'media/video/IG_LL.mp4', version: 0},
+            IG_LR: {name: 'media/video/IG_LR.mp4', version: 1},
+            IG_RL: {name: 'media/video/IG_RL.mp4', version: 1},
+            IG_RR: {name: 'media/video/IG_RR.mp4', version: 1},
+            KNOW_LL: {name: 'media/video/KNOW_LL.mp4', version: 1},
+            KNOW_LR: {name: 'media/video/KNOW_LR.mp4', version: 1},
+            KNOW_RL: {name: 'media/video/KNOW_RL.mp4', version: 1},
+            KNOW_RR: {name: 'media/video/KNOW_RR.mp4', version: 1},
+            ATTENTION_3SEC: {name: 'media/video/Attentiongetter_3sec.mp4', version: 0},
         }
 
         var familiarizationOrders = {
@@ -309,7 +309,7 @@
         
         var attention_getter = {
             type: "video-keyboard-response",
-            stimulus: [videos.ATTENTION_3SEC],
+            stimulus: [videos.ATTENTION_3SEC.name],
             autoplay: true,
             controls: false,
             height: () => window.innerHeight,
@@ -319,6 +319,7 @@
                 task: 'attention_getter',
                 windowHeight: () => window.innerHeight,
                 windowWidth: () => window.innerWidth,
+                stimulus_version: videos.ATTENTION_3SEC.version,
             },
         }
 
@@ -335,6 +336,7 @@
                 task: 'video',
                 windowHeight: () => window.innerHeight,
                 windowWidth: () => window.innerWidth,
+                stimulus_version: jsPsych.timelineVariable('version'),
             },
             extensions: [
                 {
@@ -424,7 +426,7 @@
                 {
                     type: 'webcam-recorder', 
                     params: {
-                        videoName: jsPsych.timelineVariable('stimulus'),
+                        videoName: jsPsych.timelineVariable('stimulus').name,
                     }
                 }
             ],
@@ -434,10 +436,10 @@
         var fam_videos = {
             timeline: [video],
             timeline_variables: [
-                { stimulus : [famUsed[0]] },
-                { stimulus : [famUsed[1]] },
-                { stimulus : [famUsed[2]] },
-                { stimulus : [famUsed[3]] },
+                { stimulus : [famUsed[0].name], version: famUsed[0].version},
+                { stimulus : [famUsed[1].name], version: famUsed[1].version},
+                { stimulus : [famUsed[2].name], version: famUsed[2].version},
+                { stimulus : [famUsed[3].name], version: famUsed[3].version},
             ],
             repetitions: 1
         }
@@ -445,7 +447,7 @@
         var test_videos1 = {
             timeline: [video],
             timeline_variables: [
-                { stimulus : [stimuliUsed[1]] },
+            { stimulus : [stimuliUsed[1].name], version: stimuliUsed[1].version},
             ],
             repetitions: 1
         }
@@ -453,7 +455,7 @@
         var test_videos2 = {
             timeline: [video],
             timeline_variables: [
-                { stimulus : [stimuliUsed[2]] },
+                { stimulus : [stimuliUsed[2].name], version: stimuliUsed[2].version},
             ],
             repetitions: 1
         }
