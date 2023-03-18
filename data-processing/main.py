@@ -320,7 +320,7 @@ for p in participants:
         df_dict_resampled['manual_exclusion_reason'] = ""
         if name_without_trialorder in exclusion_dict and df_dict['trial_num'] in exclusion_dict[name_without_trialorder]:
             df_dict['manual_exclusion'] = "yes"
-            df_dict['manual_exclusion'] = exclusion_comments[name_without_trialorder]
+            df_dict['manual_exclusion_reason'] = exclusion_comments[name_without_trialorder]
             df_dict_resampled['manual_exclusion'] = "yes"
             df_dict_resampled['manual_exclusion_reason'] = exclusion_comments[name_without_trialorder]
 
