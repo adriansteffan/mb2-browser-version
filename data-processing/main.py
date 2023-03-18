@@ -230,6 +230,7 @@ interval_len_of_interest = 8000
 
 
 exclusion_dict = dict()
+exclusion_comments = dict()
 checked_participants = []  # list of participants listed in the exclusion_csv, used to only include the checked ones
 
 # If it exists, parse the csv for exclusions due to manual inspection
@@ -258,14 +259,13 @@ if os.path.exists(exclusion_csv_path):
         for index, value in enumerate(exclusion_df[colname]):
             if not isinstance(value, str) or value.lower() != "yes":
                 exclusion_dict[exclusion_df['id'][index]].append(trial_index+1)
+                exclusion_comments[exclusion_df['id'][index]] = exclusion_df['comment'][index]
 
-    # data about manual exclusions
+                # data about manual exclusions
     merged_exclusion_list = []
     for key, value in exclusion_dict.items():
         merged_exclusion_list += value
 
-    from collections import Counter
-    print(Counter(merged_exclusion_list))
     
 else:
     print("No file containing manual trial exclusions found. Is this intended?")
@@ -310,14 +310,25 @@ for p in participants:
 
         name_without_trialorder = "_".join(p.split("_")[:-1])
 
-        # if an exclusion file is present, only include the ones listed in the exclusion file but not excluded
-        if os.path.exists(exclusion_csv_path) and (name_without_trialorder not in checked_participants or (name_without_trialorder in exclusion_dict and df_dict['trial_num'] in exclusion_dict[name_without_trialorder])):
+        # if an exclusion file is present, only consider participants listed in the exclusion file
+        if os.path.exists(exclusion_csv_path) and name_without_trialorder not in checked_participants:
             continue
+
+        df_dict['manual_exclusion'] = "no"
+        df_dict['manual_exclusion_reason'] = ""
+        df_dict_resampled['manual_exclusion'] = "no"
+        df_dict_resampled['manual_exclusion_reason'] = ""
+        if name_without_trialorder in exclusion_dict and df_dict['trial_num'] in exclusion_dict[name_without_trialorder]:
+            df_dict['manual_exclusion'] = "yes"
+            df_dict['manual_exclusion'] = exclusion_comments[name_without_trialorder]
+            df_dict_resampled['manual_exclusion'] = "yes"
+            df_dict_resampled['manual_exclusion_reason'] = exclusion_comments[name_without_trialorder]
+
 
         df_dict['stimulus'] = trial['stimulus'][0].split("/")[-1].split(".")[0]
         df_dict_resampled['stimulus'] = df_dict['stimulus']
 
-        # Exclusion criterion 2: low sampling rate
+        # calculate sampling rate
         datapoints = trial['webgazer_data']
         sampling_diffs = [datapoints[i + 1]['t'] - datapoints[i]['t'] for i in range(1, len(datapoints) - 1)]
         sampling_rates = [1000 / diff for diff in sampling_diffs]
@@ -367,6 +378,11 @@ for p in participants:
 
             df_dict['x_stim'] = x_stim
             df_dict['y_stim'] = y_stim
+
+            df_dict['internal_aoi_hit'] = "none"
+            if "hitAois" in datapoint:
+                df_dict['internal_aoi_hit'] = datapoint["hitAois"]
+
 
             df_dict_list.append(dict(df_dict))
 
@@ -420,7 +436,7 @@ def create_beeswarm(media_name, resampled_df, name_filter, show_sd_circle):
     p1.wait()
 
     #filter dataframe by name_filter and trial
-    clean_df = resampled_df[(resampled_df['stimulus'] == media_name) & (resampled_df['subid'].str.contains(name_filter))]
+    clean_df = resampled_df[(resampled_df['stimulus'] == media_name) & (resampled_df['subid'].str.contains(name_filter)) & (resampled_df['manual_exclusion'] != "yes")]
 
     # tag the video with eye tracking data
     video = cv2.VideoCapture(pre_path)
@@ -446,8 +462,8 @@ def create_beeswarm(media_name, resampled_df, name_filter, show_sd_circle):
         for i, row in relevant_rows.iterrows():
 
             x, y, outside = translate_coordinates(STIMULUS_ASPECT_RATIO,
-                                         row['windowHeight'],
-                                         row['windowWidth'],
+                                         row['win_height'],
+                                         row['win_width'],
                                          vid_height,
                                          vid_width,
                                          row['x'],
