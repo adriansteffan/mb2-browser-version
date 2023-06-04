@@ -494,8 +494,6 @@
                         };
 
                         const transmitVideoData = (data, encrypted) => {
-                            console.log(name)
-                            console.log(nameFromMediaPath)
                             xhr.send(JSON.stringify({
                                 filename: subjectString+trialOrder+"_"+nameFromMediaPath(name),
                                 filedata: data,
