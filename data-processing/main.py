@@ -401,14 +401,14 @@ for p in participants:
 df = pd.DataFrame(df_dict_list)
 df_resampled = pd.DataFrame(df_dict_resampled_list)
 
-if len(sys.argv) == 1 or sys.argv[1] == "p":
-    df.to_csv(output_directory + "/transformed_data.csv", encoding='utf-8')
-    df_resampled.to_csv(output_directory+"/transformed_data_resampled.csv", encoding='utf-8')
 
-    with zipfile.ZipFile(output_directory + '/raw.zip', 'w') as zipObj:
-        for file in Path(data_directory).glob('*.json'):
-            print(file)
-            zipObj.write(os.path.join(os.getcwd(), str(file)),arcname=os.path.split(str(file))[-1])
+df.to_csv(output_directory + "/transformed_data.csv", encoding='utf-8')
+df_resampled.to_csv(output_directory+"/transformed_data_resampled.csv", encoding='utf-8')
+
+with zipfile.ZipFile(output_directory + '/raw.zip', 'w') as zipObj:
+    for file in Path(data_directory).glob('*.json'):
+        print(file)
+        zipObj.write(os.path.join(os.getcwd(), str(file)),arcname=os.path.split(str(file))[-1])
 
 
 def create_beeswarm(media_name, resampled_df, name_filter, show_sd_circle):
