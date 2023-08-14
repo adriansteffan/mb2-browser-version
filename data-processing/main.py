@@ -204,7 +204,7 @@ participants = set()
 trials = set()
 
 for filename in files:
-    if filename.startswith(".") or filename.endswith(".json"):
+    if filename.startswith("."):# or filename.endswith(".json"):
         continue
     try:
 
