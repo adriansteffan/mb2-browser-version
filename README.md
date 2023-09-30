@@ -2,6 +2,7 @@
 
 This repository contains the code to run a webcam-powered, browser-based eye-tracking experiment to participate in [ManyBabies2](https://manybabies.github.io/MB2/).
 
+This README contains technical documentation and details to make the data pipeline retracable. Information on how to participate in the experiment using this software can be found in the official [MB2 Webgazer Manual](https://docs.google.com/document/d/1A0PweKqvWuFw-rm1qcIMNiQAZ669XIjsLc7c-F2sobI/edit).
 
 <p align="center">
 <img src="demo.gif" width="500" >
@@ -35,9 +36,7 @@ If you want to use the visualization tool, you will need an [ffmpeg](https://www
 ```
 python3.7 -m pip install -r requirements.txt
 ``` 
-in the `data-processing` directory to install the necessary dependencies. This tool will be dockerized at a later date.
-
-This project was developed and deployed on MacOS and Ubuntu systems. A setup guide for Microsoft Windows is in the works.
+in the `data-processing` directory to install the necessary dependencies.
 
 
 ## Deployment
@@ -181,44 +180,55 @@ The data that was uploaded by the participants browsers can be found in `prod_mb
 
 Note: If you are running ManyKeys, each User will have a seperate folder, filled with ciphered `.enc` files. Archive this folder and send it to the respective user for decryption.
 
-### Preprocessing the eye tracking data and visualization
 
-To preprocess and visualize the eye tracking data of each participant and facilitate the pre-screening of participant videos, you can use the script provided in the `data-processing` directory. The script expects the data of the participants to be located in `prod_mb2-browser-version/data`, so if you are running a development setup, you will need to move your data there first.
+## Data Processing Pipeline
 
-#### No manual exclusion
-If you just want to visualize all the data without manually excluding participants, run
+This section describes how the output data from the experiment's software is processed into the final data format for the MB2 analysis.
+
+As the study was a collaborative effort across multiple labs, handled sensitive data, and was restructured during data collection, these steps could be trimmed down in simpler setups. For retracability, we depict the pipeline exactly how it worked in the study.
+
+The first steps of the processing pipeline are explained in [Part 3 of the MB2 Webgazer Manual](https://docs.google.com/document/d/1A0PweKqvWuFw-rm1qcIMNiQAZ669XIjsLc7c-F2sobI/edit#heading=h.y5vqykpbkcez). These steps were performed decentralized by each collecting lab and use the files in the [data-processing](data-processing/) folder.
+
+Afterwards, the collected files were sent to a single lab that prepared the data for import into the joined mb2 dataset. These steps are explained in the following section and files for these are found in [data-import-script](data-import-script/).
+
+
+
+
+### Data import
+
+To run the script, you will need a [Python3.7](https://www.python.org/downloads/) installation. You will also need to run 
+```
+python3.7 -m pip install -r requirements.txt
+``` 
+in the `data-import-script` directory to install the necessary dependencies.
+
+Next, create a `data` folder in the [data-import-script](data-import-script/) directory and arrange the labs data in the following structure: 
 
 ```
-python main.py
+data-import-script
+│
+├── import.py
+├── requirements.txt
+└── data
+    ├── LABNAME_01
+    │   ├── excluded_trials.csv
+    │   └── raw
+    │       ├── PARTICIPANTID01_TRIALORDER_data.json
+    │       ├── PARTICIPANTID02_TRIALORDER_data.json
+    │       └── ...
+    ├── LABNAME_02
+    │   └── ...
+    ...
 ```
 
-This will create an `output` folder next to the script, with seperate folders for each participant. In there you can find video files that overlay the eyetracking results over the stimulus videos and add the synchronized webcam video as well as beeswarm plots for all stimuli.
+(To separate adult and toddlerdata for labs, include the data via separate directories names LABNAME01_adult or LABNAME01_toddler)
 
-#### Manual exclusion (Manywebcams study)
-
-If manual inspection and exclusion of certain trials are required, start by running 
-
+Then, run
 ```
-python main.py t
-```
+python3.7 import.py
+``` 
+in the `data-import-script` directory to perform data import. The resulting files will appear in `data-import-script/output`.
 
-This will create an `output` folder next to the script, with seperate folders for each participant. In there you can find video files that overlay the eyetracking results over the stimulus videos and add the synchronized webcam video.
-
-Next, rename the `example_excluded_trials.csv` to `excluded_trials.csv`. For every participant, look through the newly rendered videos and specify what trials to include or exclude by putting 'yes' or 'no' in the corresponding fields (make sure to order the trials per row in the order they appeared for the participant).
-
-After deciding what trials to include/exlcude, run 
-```
-python main.py p
-```
-
-to generate the files suitable for analysis in R or SPSS.
-
-Finally, 
-```
-python main.py b
-```
-
-will create the beeswarm plots for all the stimuli videos, excluding all participant trials specified in `excluded_trials.csv`.
 
 ## Built With
 

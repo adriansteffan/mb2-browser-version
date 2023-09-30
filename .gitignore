@@ -5,4 +5,6 @@ data-processing/output/
 data-processing/.idea/
 data-processing/excluded_trials.csv
 prod_mb2-webcam-eyetracking/webroot/
+data-import-script/data/
+data-import-script/output/
 .DS_Store
