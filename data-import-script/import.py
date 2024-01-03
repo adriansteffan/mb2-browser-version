@@ -3,9 +3,7 @@ This code is hastily pasted together from the data-processing pipeline due
 to a restructuring of the data pipeline, so please ignore code quality, thanks!
 """
 
-# TODO: Lab based eyetrackers assumed a fixed stimulus resolution/size, our software readjusted the stimulus presentation to be fullscreen. How do represent this in the data output?
 # TODO: How to import exclusions? For the other trackers, trial wise exclusions live in the respective demo file, but we have a separate one.
-# TODO: How to work stimulus version into this
 # TODO: Keep track of the varying sampling rates?
 
 import json
@@ -45,6 +43,12 @@ target_aoi_location = {
     "IG_RR": "left"
 }
 
+def remove_suffix(input_string):
+    suffixes = ["_adults", "_toddlers"]
+    for suffix in suffixes:
+        if input_string.endswith(suffix):
+            return input_string[:-len(suffix)]
+    return input_string
 
 if os.path.exists(OUTPUT_DIRECTORY):
     shutil.rmtree(OUTPUT_DIRECTORY)
@@ -97,7 +101,7 @@ for lab in labs:
         
         df_dict = dict()
         df_dict['participant_id'] = subid
-        df_dict['lab_id'] = lab
+        df_dict['lab_id'] = remove_suffix(lab)
         df_dict['pupil_left'] = None
         df_dict['pupil_right'] = None
 
@@ -111,7 +115,7 @@ for lab in labs:
 
             # Check if the trial happened after the video fix
             trial_version = trial['stimulus_version'] if "stimulus_version" in trial else 0
-            df_dict['media_name'] = f'{trial["stimulus"][0].split("/")[-1].split(".")[0]}_{trial_version}'
+            df_dict['media_name'] = f'{trial["stimulus"][0].split("/")[-1].split(".")[0]}{"_new" if trial_version == 1 else ""}'
     
             datapoints = trial['webgazer_data']
             # calculate sampling rate
